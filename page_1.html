@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>멜로디 런: 오선지 대모험</title>
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Gamja Flower', cursive;
+        }
+
+        #game-wrapper {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #2c2a4a;
+            overflow: hidden;
+        }
+
+        #instruction-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            z-index: 100;
+            pointer-events: none;
+            backdrop-filter: blur(5px);
+            white-space: nowrap;
+        }
+
+        /* Home Button */
+        #home-btn {
+            position: absolute;
+            top: 20px;
+            left: 40px;
+            right: auto;
+            background: #9575cd;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.5rem;
+            z-index: 101;
+            /* Above instruction bar */
+            border: 2px solid white;
+            font-family: 'Gamja Flower', cursive;
+            cursor: pointer;
+            pointer-events: auto;
+            /* Enable click */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        #home-btn:hover {
+            background: #7e57c2;
+            transform: scale(1.05);
+        }
+
+        .treble-clef {
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            height: 350px;
+            font-size: 25rem;
+            color: rgba(255, 255, 255, 0.1);
+            z-index: 1;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 90px;
+            width: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+            box-sizing: border-box;
+        }
+
+        .hud-text {
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            backdrop-filter: blur(5px);
+        }
+
+        .menu-box {
+            background: white;
+            padding: 40px 60px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 3px solid #9c27b0;
+        }
+
+        .btn {
+            background: #d1c4e9;
+            color: #4a148c;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border-radius: 50px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-family: 'Gamja Flower', cursive;
+            transition: transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-wrapper">
+        <a href="index.html" id="home-btn">🏠 홈으로</a>
+
+        <div id="instruction-bar">
+            🎵 <span id="current-song-title" style="color:#ffd700; margin:0 10px;">노래 준비 중...</span> 🎵 &nbsp;|&nbsp;
+            [Space] 점프 / [↓] 슬라이드 &nbsp;|&nbsp; 폭탄(💣) 조심!
+        </div>
+
+        <div class="treble-clef">𝄞</div>
+        <canvas id="game-canvas"></canvas>
+
+        <div id="ui-layer">
+            <div class="hud-text">❤️ <span id="health">3</span></div>
+            <div class="hud-text">⭐ <span id="score">0</span></div>
+        </div>
+
+        <div id="start-screen" class="overlay">
+            <div class="menu-box">
+                <h1 style="font-size:3.5rem; margin:0 0 20px 0; color:#4a148c;">멜로디 런</h1>
+                <p style="font-size:1.8rem; color:#666;">게임으로 계이름 익히기</p>
+                <button class="btn" onclick="startGame()">게임 시작</button>
+            </div>
+        </div>
+
+        <div id="game-over" class="overlay hidden">
+            <div class="menu-box">
+                <h1 id="end-title" style="color:#d32f2f; font-size:3rem;">게임 종료</h1>
+                <p style="font-size:2.5rem;">최종 점수: <span id="final-score">0</span></p>
+                <button class="btn" onclick="location.reload()">다시 하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log("Melody Run: Song Library & Piano Engine Active.");
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        let gameActive = false;
+        let score = 0;
+        let health = 3;
+        let frame = 0;
+        let speed = 7;
+        let victory = false;
+
+        let STAFF_BASE_Y = 0;
+        let STAFF_STEP = 0;
+
+        // --- Data ---
+        const NOTES = [
+            { name: '도', color: '#ff0000', freq: 261.63, offset: -2, type: 'C4' },
+            { name: '레', color: '#ff7f00', freq: 293.66, offset: -1 },
+            { name: '미', color: '#ffd700', freq: 329.63, offset: 0 },
+            { name: '파', color: '#00cc00', freq: 349.23, offset: 1 },
+            { name: '솔', color: '#0066ff', freq: 392.00, offset: 2 },
+            { name: '라', color: '#000080', freq: 440.00, offset: 3 },
+            { name: '시', color: '#8b00ff', freq: 493.88, offset: 4 },
+            { name: '도', color: '#ff0000', freq: 523.25, offset: 5 }
+        ];
+
+        const SONGS = [
+            {
+                title: "비행기",
+                // Mi Re Do Re Mi Mi Mi / Re Re Re / Mi Mi Mi / Mi Re Do Re Mi Mi Mi / Re Re Mi Re Do
+                melody: [2, 1, 0, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 2, 1, 0, 1, 2, 2, 2, 1, 1, 2, 1, 0]
+            },
+            {
+                title: "나비야",
+                // Sol Mi Mi / Fa Re Re / Do Re Mi Fa Sol Sol Sol / Sol Mi Mi / Fa Re Re / Do Mi Sol Sol Mi
+                melody: [4, 2, 2, 3, 1, 1, 0, 1, 2, 3, 4, 4, 4, 4, 2, 2, 3, 1, 1, 0, 2, 4, 4, 2]
+            },
+            {
+                title: "학교종",
+                // Sol Sol La La Sol Sol Mi / Sol Sol Mi Mi Re / Sol Sol La La Sol Sol Mi / Sol Mi Re Mi Do
+                melody: [4, 4, 5, 5, 4, 4, 2, 4, 4, 2, 2, 1, 4, 4, 5, 5, 4, 4, 2, 4, 2, 1, 2, 0]
+            }
+        ];
+
+        let currentSong = null;
+        let melodyIdx = 0;
+        let notes = [];
+        let bombs = [];
+        let particles = [];
+
+        const player = { x: 120, y: 0, vy: 0, gravity: 0.8, jump: -18, grounded: false, invulnerable: 0 };
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            STAFF_STEP = canvas.height * 0.06;
+            STAFF_BASE_Y = (canvas.height / 2) + (4 * STAFF_STEP);
+            player.groundY = STAFF_BASE_Y + (STAFF_STEP * 3);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function startGame() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            // Pick Random Song
+            const rand = Math.floor(Math.random() * SONGS.length);
+            currentSong = SONGS[rand];
+            melodyIdx = 0;
+
+            document.getElementById('current-song-title').innerText = "현재 곡: " + currentSong.title;
+            document.getElementById('start-screen').classList.add('hidden');
+
+            gameActive = true;
+            victory = false;
+            score = 0; health = 3;
+            document.getElementById('score').innerText = score;
+            document.getElementById('health').innerText = health;
+
+            loop();
+        }
+
+        function getNoteY(offset) {
+            return STAFF_BASE_Y - (offset * STAFF_STEP);
+        }
+
+        function spawnNote() {
+            // Check end of song
+            if (melodyIdx >= currentSong.melody.length) {
+                // If existing notes are gone, Trigger Victory?
+                // Or just loop? User said "무사히 노래를 모두 완수하면... 폭죽".
+                // So once last note spawns, we wait for clean board.
+                return;
+            }
+
+            const noteVal = currentSong.melody[melodyIdx];
+            melodyIdx++;
+
+            const data = NOTES[noteVal];
+            notes.push({
+                x: canvas.width,
+                y: getNoteY(data.offset),
+                data: data,
+                collected: false,
+                isFinal: melodyIdx === currentSong.melody.length // Mark last note
+            });
+        }
+
+        function spawnBomb() {
+            if (melodyIdx >= currentSong.melody.length) return; // Stop spawning bombs at end
+            const offset = Math.floor(Math.random() * 8) - 2;
+            bombs.push({
+                x: canvas.width + 300,
+                y: getNoteY(offset),
+                offset: offset
+            });
+        }
+
+        // --- Audio Logic ---
+        function playPianoTone(freq, type = 'sine') {
+            if (!gameActive && !victory) return;
+
+            const t = audioCtx.currentTime;
+
+            // Oscillator 1 (Fundamental)
+            const osc1 = audioCtx.createOscillator();
+            const g1 = audioCtx.createGain();
+            osc1.type = 'triangle'; // Richer than sine
+            osc1.frequency.value = freq;
+            osc1.connect(g1);
+            g1.connect(audioCtx.destination);
+
+            g1.gain.setValueAtTime(0, t);
+            g1.gain.linearRampToValueAtTime(0.4, t + 0.02); // Attack
+            g1.gain.exponentialRampToValueAtTime(0.01, t + 1.0); // Decay
+
+            // Oscillator 2 (Harmonic - "String" quality)
+            const osc2 = audioCtx.createOscillator();
+            const g2 = audioCtx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.value = freq * 2;
+            osc2.connect(g2);
+            g2.connect(audioCtx.destination);
+
+            g2.gain.setValueAtTime(0, t);
+            g2.gain.linearRampToValueAtTime(0.1, t + 0.02);
+            g2.gain.exponentialRampToValueAtTime(0.01, t + 0.8);
+
+            osc1.start(t); osc1.stop(t + 1.0);
+            osc2.start(t); osc2.stop(t + 1.0);
+        }
+
+        // Beethoven's Ode to Joy Melody for Victory
+        async function playVictoryMelody() {
+            const joy = [
+                2, 2, 3, 4, 4, 3, 2, 1, 0, 0, 1, 2, 2, 1, 1,   // Mi Mi Fa Sol...
+                2, 2, 3, 4, 4, 3, 2, 1, 0, 0, 1, 2, 1, 0, 0    // Mi... Do Do
+            ];
+
+            for (let i = 0; i < joy.length; i++) {
+                if (!gameActive && !victory) return;
+                const note = NOTES[joy[i]];
+                playPianoTone(note.freq);
+                await new Promise(r => setTimeout(r, 400)); // 400ms tempo
+            }
+        }
+
+        function triggerVictory() {
+            victory = true;
+            // gameActive remains true for rendering fireworks, but logic stops scrolling?
+            // Let's keep scrolling background or just stop player.
+            // User: "화면전체에 폭죽을 터뜨리고..."
+
+            // Clear entities
+            bombs = [];
+
+            // UI Update
+            document.getElementById('end-title').innerText = "성공! 멜로디 완성! 🎉";
+            document.getElementById('end-title').style.color = "#FFD700";
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('game-over').classList.remove('hidden');
+
+            playVictoryMelody();
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            frame++;
+
+            if (victory) {
+                // Fireworks logic only
+                if (frame % 20 === 0) {
+                    createBurst(Math.random() * canvas.width, Math.random() * canvas.height * 0.5, getRandomColor(), true);
+                }
+                particles.forEach((p, i) => {
+                    p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+                    if (p.life <= 0) particles.splice(i, 1);
+                });
+                return; // Skip Gameplay updates
+            }
+
+            player.vy += player.gravity;
+            player.y += player.vy;
+            if (player.y > player.groundY) {
+                player.y = player.groundY;
+                player.vy = 0;
+                player.grounded = true;
+            } else {
+                player.grounded = false;
+            }
+            if (player.invulnerable > 0) player.invulnerable--;
+
+            // Spawn
+            // Notes spaced out: every 70 frames approx 1.1s at 60fps.
+            if (frame % 70 === 0) spawnNote();
+            if (frame % 150 === 0) spawnBomb();
+
+            // Check Victory Condition: No notes left and Melody exhausted
+            if (melodyIdx >= currentSong.melody.length && notes.length === 0) {
+                triggerVictory();
+            }
+
+            notes.forEach((n, i) => {
+                n.x -= speed;
+                const dist = Math.hypot((n.x) - (player.x), (n.y) - (player.y - 80));
+                if (!n.collected && dist < 60) {
+                    n.collected = true;
+                    score += 100;
+                    document.getElementById('score').innerText = score;
+                    createBurst(n.x, n.y, n.data.color);
+                    notes.splice(i, 1);
+                    playPianoTone(n.data.freq); // Quality Sound
+                }
+                if (n.x < -100) notes.splice(i, 1);
+            });
+
+            bombs.forEach((b, i) => {
+                b.x -= speed;
+                const dist = Math.hypot((b.x) - (player.x), (b.y) - (player.y - 80));
+                if (dist < 50) {
+                    if (player.invulnerable <= 0) {
+                        health--;
+                        document.getElementById('health').innerText = health;
+                        player.invulnerable = 60;
+                        createBurst(b.x, b.y, '#555');
+                        bombs.splice(i, 1);
+                        if (health <= 0) { // Lose
+                            gameActive = false;
+                            document.getElementById('game-over').classList.remove('hidden');
+                            document.getElementById('final-score').innerText = score;
+                        }
+                    }
+                }
+                if (b.x < -100) bombs.splice(i, 1);
+            });
+
+            particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy; p.life -= 0.05;
+                if (p.life <= 0) particles.splice(i, 1);
+            });
+        }
+
+        function drawCharacter(x, y) {
+            if (player.invulnerable > 0 && Math.floor(frame / 5) % 2 === 0) return;
+            const scale = 1.8;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+            const localY = -50;
+            ctx.fillStyle = '#FF00FF'; ctx.strokeStyle = '#FF00FF';
+            ctx.beginPath(); ctx.arc(0, localY, 15, 0, Math.PI * 2); ctx.fill();
+            // Stem
+            ctx.lineWidth = 4; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(14, localY); ctx.lineTo(14, localY - 45); ctx.stroke();
+
+            // Longer, Dynamic Tail (Flag) - Thinner & Tapered
+            ctx.beginPath();
+            ctx.moveTo(14, localY - 45); // Start at top of stem
+            // Outer curve (Right & Down)
+            ctx.bezierCurveTo(45, localY - 25, 45, localY - 5, 14, localY - 10);
+            // Inner curve (Back Up - Closer to create taper)
+            ctx.bezierCurveTo(35, localY - 10, 35, localY - 30, 14, localY - 25);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = 'white';
+            ctx.beginPath(); ctx.arc(-5, localY - 2, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(6, localY - 2, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.beginPath(); ctx.arc(-4, localY - 2, 1.5, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(7, localY - 2, 1.5, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(0, localY + 2, 6, 0.2, Math.PI - 0.2); ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawBomb(b) {
+            ctx.save();
+            ctx.translate(b.x, b.y);
+            const s = 1 + Math.sin(frame * 0.2) * 0.1;
+            ctx.scale(s, s);
+            ctx.fillStyle = '#222';
+            ctx.beginPath(); ctx.arc(0, 0, 25, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#555';
+            ctx.beginPath(); ctx.arc(-8, -8, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(0, -25); ctx.quadraticCurveTo(10, -35, 15, -30); ctx.stroke();
+            ctx.fillStyle = frame % 10 < 5 ? '#FFD700' : '#FF4500';
+            ctx.beginPath(); ctx.arc(15, -30, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'; ctx.lineWidth = 2;
+            for (let i = 0; i < 5; i++) {
+                let y = getNoteY(i * 2);
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+
+            drawCharacter(player.x, player.y);
+
+            notes.forEach(n => {
+                if (n.data.offset === -2) {
+                    ctx.beginPath(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;
+                    ctx.moveTo(n.x - 25, n.y); ctx.lineTo(n.x + 25, n.y); ctx.stroke();
+                }
+                ctx.fillStyle = n.data.color;
+                ctx.beginPath(); ctx.arc(n.x, n.y, 25, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = 'white'; ctx.lineWidth = 3; ctx.stroke();
+                ctx.fillStyle = 'white'; ctx.font = 'bold 30px "Gamja Flower"'; ctx.textAlign = 'center';
+                ctx.fillText(n.data.name, n.x, n.y + 7);
+            });
+
+            bombs.forEach(b => drawBomb(b));
+
+            particles.forEach(p => {
+                ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
+                ctx.beginPath(); ctx.arc(p.x, p.y, (p.big ? 15 : 8) * p.life, 0, Math.PI * 2); ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function loop() {
+            if (gameActive || victory) update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        window.addEventListener('keydown', e => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                if (player.grounded) {
+                    createJumpEffect(player.x, player.y);
+                }
+                player.vy = player.jump;
+                player.grounded = false;
+            }
+        });
+
+        function createJumpEffect(x, y) {
+            for (let i = 0; i < 10; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random()) * 5, // Downward/outward
+                    life: 0.8,
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    big: false
+                });
+            }
+        }
+
+        function createBurst(x, y, color, big = false) {
+            const count = big ? 30 : 8;
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * (big ? 30 : 15),
+                    vy: (Math.random() - 0.5) * (big ? 30 : 15),
+                    life: 1, color, big
+                });
+            }
+        }
+
+        function getRandomColor() {
+            const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+    </script>
+</body>
+
+</html>

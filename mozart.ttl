@@ -1,0 +1,92 @@
+@prefix ex: <http://example.org/music/> .
+@prefix dbp: <http://dbpedia.org/resource/> .
+@prefix dbo: <http://dbpedia.org/ontology/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# 인물 정보: 볼프강 아마데우스 모차르트
+ex:Wolfgang_Amadeus_Mozart a dbo:Person ;
+    rdfs:label "Wolfgang Amadeus Mozart" ;
+    dbo:birthDate "1756-01-27"^^xsd:date ;
+    dbo:deathDate "1791-12-05"^^xsd:date ;
+    dbo:birthPlace ex:Salzburg ;
+    dbo:deathPlace ex:Vienna ;
+    ex:father ex:Leopold_Mozart ;
+    ex:mother ex:Anna_Maria_Mozart ;
+    ex:sibling ex:Maria_Anna_Mozart ;
+    ex:spouse ex:Constanze_Weber ;
+    ex:influenceBy ex:Johann_Christian_Bach, ex:Padre_Martini, ex:Joseph_Haydn ;
+    ex:occupation "Composer", "Pianist" .
+
+# 가족 및 주변 인물
+ex:Leopold_Mozart a dbo:Person ; rdfs:label "Leopold Mozart" .
+ex:Anna_Maria_Mozart a dbo:Person ; rdfs:label "Anna Maria Mozart" .
+ex:Maria_Anna_Mozart a dbo:Person ; rdfs:label "Maria Anna (Nannerl) Mozart" .
+ex:Constanze_Weber a dbo:Person ; rdfs:label "Constanze Weber" .
+ex:Joseph_Haydn a dbo:Person ; rdfs:label "Joseph Haydn" .
+
+# 주요 장소
+ex:Salzburg a dbo:Place ; rdfs:label "Salzburg" .
+ex:Vienna a dbo:Place ; rdfs:label "Vienna" .
+ex:London a dbo:Place ; rdfs:label "London" .
+ex:Paris a dbo:Place ; rdfs:label "Paris" .
+ex:Mannheim a dbo:Place ; rdfs:label "Mannheim" .
+
+# 주요 작품 (쾨헬 번호 포함)
+ex:Symphony_No1_K16 a ex:Work ;
+    rdfs:label "Symphony No. 1 (K.16)" ;
+    ex:composer ex:Wolfgang_Amadeus_Mozart ;
+    ex:composedIn "London" .
+
+ex:Symphony_No25_K183 a ex:Work ;
+    rdfs:label "Symphony No. 25 in G minor (K.183)" ;
+    ex:style "Sturm und Drang" .
+
+ex:Idomeneo_K366 a ex:Opera ;
+    rdfs:label "Idomeneo (K.366)" ;
+    ex:genre "Opera Seria" .
+
+ex:Le_Nozze_di_Figaro_K492 a ex:Opera ;
+    rdfs:label "Le Nozze di Figaro (K.492)" ;
+    ex:librettist ex:Lorenzo_Da_Ponte ;
+    ex:genre "Opera Buffa" .
+
+ex:Don_Giovanni_K527 a ex:Opera ;
+    rdfs:label "Don Giovanni (K.527)" ;
+    ex:librettist ex:Lorenzo_Da_Ponte .
+
+ex:Symphony_No41_K551 a ex:Work ;
+    rdfs:label "Symphony No. 41 'Jupiter' (K.551)" ;
+    ex:composedDate "1788"^^xsd:gYear .
+
+ex:Die_Zauberflote_K620 a ex:Opera ;
+    rdfs:label "The Magic Flute (K.620)" ;
+    ex:genre "Singspiel" ;
+    ex:collaborator ex:Emanuel_Schikaneder .
+
+ex:Requiem_K626 a ex:Work ;
+    rdfs:label "Requiem in D minor (K.626)" ;
+    ex:status "Unfinished" ;
+    ex:composedDate "1791"^^xsd:gYear .
+
+# 생애 주요 사건 및 활동
+ex:European_Grand_Tour a ex:Event ;
+    ex:participant ex:Wolfgang_Amadeus_Mozart ;
+    ex:startDate "1762"^^xsd:gYear ;
+    ex:description "European grand tour for child prodigy performance" .
+
+ex:Freelance_Period_Vienna a ex:LifePhase ;
+    ex:subject ex:Wolfgang_Amadeus_Mozart ;
+    ex:location ex:Vienna ;
+    ex:startDate "1781"^^xsd:gYear ;
+    ex:description "Independent musical career after leaving Archbishop Colloredo" .
+
+# 음악적 성과 및 영향
+ex:Haydn_Quartets a ex:WorkGroup ;
+    ex:dedicatee ex:Joseph_Haydn ;
+    ex:composer ex:Wolfgang_Amadeus_Mozart .
+
+ex:Kochel_Catalogue a ex:Catalogue ;
+    rdfs:label "Kochel-Verzeichnis" ;
+    ex:creator "Ludwig von Kochel" ;
+    ex:target ex:Wolfgang_Amadeus_Mozart .
